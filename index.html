@@ -190,15 +190,12 @@
             tick();
         }
 
-        // Try api.countapi.xyz for a real hit counter
+        // Fetch unique visitor count from our server
         (function() {
-            var namespace = "dennismysh-github-io";
-            var key = "visitor-counter";
-
-            fetch("https://api.countapi.xyz/hit/" + namespace + "/" + key)
+            fetch("/api/visit")
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
-                    rollCounter(data.value);
+                    rollCounter(data.count);
                 })
                 .catch(function() {
                     // Fallback: generate a plausible visitor number from the date

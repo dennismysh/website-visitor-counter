@@ -1,0 +1,12 @@
+{
+  "name": "website-visitor-counter",
+  "version": "1.0.0",
+  "description": "Retro mainframe visitor counter with unique IP tracking",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
