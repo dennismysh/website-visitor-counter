@@ -1,0 +1,8 @@
+{
+  "name": "website-visitor-counter",
+  "version": "1.0.0",
+  "description": "Retro mainframe visitor counter with unique IP tracking",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
