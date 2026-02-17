@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOGGED IPs</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000000;
+            color: #33ff33;
+            font-family: 'VT323', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15) 0px,
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* CRT flicker */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 16, 16, 0.1);
+            pointer-events: none;
+            z-index: 10;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0%   { opacity: 0.27861; }
+            5%   { opacity: 0.34769; }
+            10%  { opacity: 0.23604; }
+            15%  { opacity: 0.90626; }
+            20%  { opacity: 0.18128; }
+            25%  { opacity: 0.83891; }
+            30%  { opacity: 0.65583; }
+            35%  { opacity: 0.67807; }
+            40%  { opacity: 0.26559; }
+            45%  { opacity: 0.84693; }
+            50%  { opacity: 0.96019; }
+            55%  { opacity: 0.08594; }
+            60%  { opacity: 0.20313; }
+            65%  { opacity: 0.71988; }
+            70%  { opacity: 0.53455; }
+            75%  { opacity: 0.37288; }
+            80%  { opacity: 0.71428; }
+            85%  { opacity: 0.70419; }
+            90%  { opacity: 0.79220; }
+            95%  { opacity: 0.30424; }
+            100% { opacity: 0.50190; }
+        }
+
+        .screen {
+            text-align: center;
+            text-shadow: 0 0 5px rgba(51, 255, 51, 0.5),
+                         0 0 10px rgba(51, 255, 51, 0.3),
+                         0 0 20px rgba(51, 255, 51, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .border-line {
+            font-size: 24px;
+            letter-spacing: 2px;
+            white-space: nowrap;
+        }
+
+        .header {
+            font-size: 20px;
+            margin: 16px 0;
+            letter-spacing: 3px;
+        }
+
+        .summary {
+            font-size: 24px;
+            margin: 16px 0;
+            letter-spacing: 2px;
+        }
+
+        .summary .count {
+            color: #ffff33;
+            text-shadow: 0 0 5px rgba(255, 255, 51, 0.5),
+                         0 0 10px rgba(255, 255, 51, 0.3),
+                         0 0 20px rgba(255, 255, 51, 0.1);
+        }
+
+        .ip-list {
+            text-align: left;
+            font-size: 20px;
+            margin: 16px auto;
+            max-width: 400px;
+            letter-spacing: 1px;
+        }
+
+        .ip-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(51, 255, 51, 0.15);
+        }
+
+        .ip-index {
+            color: #ffff33;
+            text-shadow: 0 0 5px rgba(255, 255, 51, 0.3);
+        }
+
+        .status {
+            font-size: 18px;
+            margin-top: 24px;
+            letter-spacing: 1px;
+        }
+
+        .cursor {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .prompt {
+            font-size: 18px;
+            margin-top: 32px;
+        }
+
+        .back-link {
+            color: #33ff33;
+            text-decoration: none;
+            font-size: 18px;
+            margin-top: 16px;
+            display: inline-block;
+        }
+
+        .back-link:hover {
+            color: #ffff33;
+        }
+
+        .loading {
+            font-size: 24px;
+            margin: 24px 0;
+            letter-spacing: 2px;
+        }
+
+        .error {
+            color: #ff3333;
+            font-size: 20px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="border-line">+============================================+</div>
+        <div class="header">*** LOGGED IP ADDRESSES ***</div>
+        <div class="header">ACCESS LOG VIEWER</div>
+        <div class="border-line">+--------------------------------------------+</div>
+
+        <div id="content">
+            <div class="loading">RETRIEVING RECORDS<span class="cursor">_</span></div>
+        </div>
+
+        <div class="border-line">+--------------------------------------------+</div>
+        <div class="status">TERMINAL: VT100 &nbsp; BAUD: 9600 &nbsp; CONN: ACTIVE</div>
+        <div class="status">DATE: <span id="sysdate"></span> &nbsp; TIME: <span id="systime"></span></div>
+        <div class="prompt"><a class="back-link" href="/">&gt; RETURN TO MAINFRAME</a></div>
+        <div class="border-line">+============================================+</div>
+    </div>
+
+    <script>
+        function padNumber(num, size) {
+            var s = String(num);
+            while (s.length < size) s = "0" + s;
+            return s;
+        }
+
+        (function() {
+            fetch("/api/ips")
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var container = document.getElementById("content");
+                    var html = '<div class="summary">TOTAL UNIQUE VISITORS: <span class="count">' + data.count + '</span></div>';
+
+                    if (data.ips.length === 0) {
+                        html += '<div class="loading">NO RECORDS FOUND</div>';
+                    } else {
+                        html += '<div class="ip-list">';
+                        for (var i = 0; i < data.ips.length; i++) {
+                            html += '<div class="ip-entry"><span class="ip-index">' + padNumber(i + 1, 4) + '</span> | ' + data.ips[i] + '</div>';
+                        }
+                        html += '</div>';
+                    }
+
+                    container.innerHTML = html;
+                })
+                .catch(function() {
+                    var container = document.getElementById("content");
+                    container.innerHTML = '<div class="error">ERROR: UNABLE TO RETRIEVE RECORDS</div>';
+                });
+        })();
+
+        function updateClock() {
+            var now = new Date();
+            var months = ["JAN","FEB","MAR","APR","MAY","JUN",
+                          "JUL","AUG","SEP","OCT","NOV","DEC"];
+            var d = padNumber(now.getDate(), 2);
+            var m = months[now.getMonth()];
+            var y = now.getFullYear();
+            document.getElementById("sysdate").textContent = d + "-" + m + "-" + y;
+
+            var h = padNumber(now.getHours(), 2);
+            var min = padNumber(now.getMinutes(), 2);
+            var sec = padNumber(now.getSeconds(), 2);
+            document.getElementById("systime").textContent = h + ":" + min + ":" + sec;
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
