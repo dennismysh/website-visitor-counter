@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VISITOR COUNTER</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000000;
+            color: #33ff33;
+            font-family: 'VT323', monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15) 0px,
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* CRT flicker */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 16, 16, 0.1);
+            pointer-events: none;
+            z-index: 10;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0%   { opacity: 0.27861; }
+            5%   { opacity: 0.34769; }
+            10%  { opacity: 0.23604; }
+            15%  { opacity: 0.90626; }
+            20%  { opacity: 0.18128; }
+            25%  { opacity: 0.83891; }
+            30%  { opacity: 0.65583; }
+            35%  { opacity: 0.67807; }
+            40%  { opacity: 0.26559; }
+            45%  { opacity: 0.84693; }
+            50%  { opacity: 0.96019; }
+            55%  { opacity: 0.08594; }
+            60%  { opacity: 0.20313; }
+            65%  { opacity: 0.71988; }
+            70%  { opacity: 0.53455; }
+            75%  { opacity: 0.37288; }
+            80%  { opacity: 0.71428; }
+            85%  { opacity: 0.70419; }
+            90%  { opacity: 0.79220; }
+            95%  { opacity: 0.30424; }
+            100% { opacity: 0.50190; }
+        }
+
+        /* CRT screen glow */
+        .screen {
+            text-align: center;
+            text-shadow: 0 0 5px rgba(51, 255, 51, 0.5),
+                         0 0 10px rgba(51, 255, 51, 0.3),
+                         0 0 20px rgba(51, 255, 51, 0.1);
+        }
+
+        .border-top, .border-bottom {
+            font-size: 24px;
+            letter-spacing: 2px;
+            white-space: nowrap;
+        }
+
+        .header {
+            font-size: 20px;
+            margin: 16px 0;
+            letter-spacing: 3px;
+        }
+
+        .visitor-line {
+            font-size: 36px;
+            margin: 24px 0;
+            letter-spacing: 2px;
+        }
+
+        .counter {
+            color: #ffff33;
+            text-shadow: 0 0 5px rgba(255, 255, 51, 0.5),
+                         0 0 10px rgba(255, 255, 51, 0.3),
+                         0 0 20px rgba(255, 255, 51, 0.1);
+            font-size: 48px;
+        }
+
+        .status {
+            font-size: 18px;
+            margin-top: 24px;
+            letter-spacing: 1px;
+        }
+
+        .cursor {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .prompt {
+            font-size: 18px;
+            margin-top: 32px;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen">
+        <div class="border-top">+============================================+</div>
+        <div class="header">*** WELCOME TO THE MAINFRAME ***</div>
+        <div class="header">SYSTEM STATUS: ONLINE</div>
+        <div class="border-top">+--------------------------------------------+</div>
+
+        <div class="visitor-line">
+            YOU ARE VISITOR NUMBER
+        </div>
+        <div class="visitor-line">
+            <span class="counter" id="counter">000000</span>
+        </div>
+
+        <div class="border-top">+--------------------------------------------+</div>
+        <div class="status">TERMINAL: VT100 &nbsp; BAUD: 9600 &nbsp; CONN: ACTIVE</div>
+        <div class="status">DATE: <span id="sysdate"></span> &nbsp; TIME: <span id="systime"></span></div>
+        <div class="prompt">&gt; READY<span class="cursor">_</span></div>
+        <div class="border-bottom">+============================================+</div>
+    </div>
+
+    <script>
+        // Visitor counter using CountAPI (free, no signup)
+        // Falls back to a random seeded number for pure static hosting
+        function padNumber(num, size) {
+            var s = String(num);
+            while (s.length < size) s = "0" + s;
+            return s;
+        }
+
+        function rollCounter(target) {
+            var el = document.getElementById("counter");
+            var current = 0;
+            var duration = 1500;
+            var steps = 30;
+            var stepTime = duration / steps;
+            var i = 0;
+
+            function tick() {
+                i++;
+                if (i >= steps) {
+                    el.textContent = padNumber(target, 6);
+                    return;
+                }
+                // Accelerate toward target
+                current = Math.floor((i / steps) * target);
+                el.textContent = padNumber(current, 6);
+                setTimeout(tick, stepTime);
+            }
+            tick();
+        }
+
+        // Try api.countapi.xyz for a real hit counter
+        (function() {
+            var namespace = "dennismysh-github-io";
+            var key = "visitor-counter";
+
+            fetch("https://api.countapi.xyz/hit/" + namespace + "/" + key)
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    rollCounter(data.value);
+                })
+                .catch(function() {
+                    // Fallback: generate a plausible visitor number from the date
+                    var epoch = new Date(2024, 0, 1).getTime();
+                    var now = Date.now();
+                    var fakeSeed = Math.floor((now - epoch) / 60000) + 4817;
+                    rollCounter(fakeSeed);
+                });
+        })();
+
+        // Live clock
+        function updateClock() {
+            var now = new Date();
+            var months = ["JAN","FEB","MAR","APR","MAY","JUN",
+                          "JUL","AUG","SEP","OCT","NOV","DEC"];
+            var d = padNumber(now.getDate(), 2);
+            var m = months[now.getMonth()];
+            var y = now.getFullYear();
+            document.getElementById("sysdate").textContent = d + "-" + m + "-" + y;
+
+            var h = padNumber(now.getHours(), 2);
+            var min = padNumber(now.getMinutes(), 2);
+            var sec = padNumber(now.getSeconds(), 2);
+            document.getElementById("systime").textContent = h + ":" + min + ":" + sec;
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
