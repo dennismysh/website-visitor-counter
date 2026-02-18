@@ -4,10 +4,13 @@ export default async () => {
   const store = getStore("visitors");
   const data = (await store.get("data", { type: "json" })) || {
     count: 0,
-    ips: [],
+    visitors: [],
   };
 
-  return Response.json({ count: data.count, ips: data.ips });
+  // Support both old format ({ ips }) and new format ({ visitors })
+  const visitors = data.visitors ?? data.ips?.map((id) => ({ id, crystal: "" })) ?? [];
+
+  return Response.json({ count: data.count, visitors });
 };
 
 export const config = {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOGGED IPs</title>
+    <title>VISITOR CRYSTALS</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -88,7 +88,7 @@
             text-shadow: 0 0 5px rgba(51, 255, 51, 0.5),
                          0 0 10px rgba(51, 255, 51, 0.3),
                          0 0 20px rgba(51, 255, 51, 0.1);
-            max-width: 600px;
+            max-width: 700px;
             width: 100%;
         }
 
@@ -117,20 +117,59 @@
                          0 0 20px rgba(255, 255, 51, 0.1);
         }
 
-        .ip-list {
+        .visitor-list {
             text-align: left;
-            font-size: 20px;
+            font-size: 18px;
             margin: 16px auto;
-            max-width: 400px;
+            max-width: 560px;
             letter-spacing: 1px;
+            width: 100%;
         }
 
-        .ip-entry {
-            padding: 4px 0;
-            border-bottom: 1px solid rgba(51, 255, 51, 0.15);
+        .visitor-entry {
+            padding: 12px 0 8px;
+            border-bottom: 1px solid rgba(51, 255, 51, 0.2);
         }
 
-        .ip-index {
+        .visitor-header {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .visitor-index {
+            color: #ffff33;
+            text-shadow: 0 0 5px rgba(255, 255, 51, 0.3);
+            flex-shrink: 0;
+        }
+
+        .visitor-id {
+            font-size: 15px;
+            word-break: break-all;
+            color: #33ff33;
+        }
+
+        .crystal {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.15;
+            color: #22cc22;
+            white-space: pre;
+            margin-left: 12px;
+            text-shadow: 0 0 4px rgba(51, 255, 51, 0.4);
+            overflow-x: auto;
+        }
+
+        .crystal-label {
+            font-size: 14px;
+            color: rgba(51, 255, 51, 0.55);
+            margin-left: 12px;
+            margin-bottom: 2px;
+            letter-spacing: 2px;
+        }
+
+        .visitor-index-box {
             color: #ffff33;
             text-shadow: 0 0 5px rgba(255, 255, 51, 0.3);
         }
@@ -183,8 +222,8 @@
 <body>
     <div class="screen">
         <div class="border-line">+============================================+</div>
-        <div class="header">*** LOGGED IP ADDRESSES ***</div>
-        <div class="header">ACCESS LOG VIEWER</div>
+        <div class="header">*** VISITOR CRYSTAL IDs ***</div>
+        <div class="header">SNOWFLAKE &gt; RUBIK &gt; UNIQUE ID</div>
         <div class="border-line">+--------------------------------------------+</div>
 
         <div id="content">
@@ -210,14 +249,25 @@
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     var container = document.getElementById("content");
+                    var visitors = data.visitors || [];
                     var html = '<div class="summary">TOTAL UNIQUE VISITORS: <span class="count">' + data.count + '</span></div>';
 
-                    if (data.ips.length === 0) {
+                    if (visitors.length === 0) {
                         html += '<div class="loading">NO RECORDS FOUND</div>';
                     } else {
-                        html += '<div class="ip-list">';
-                        for (var i = 0; i < data.ips.length; i++) {
-                            html += '<div class="ip-entry"><span class="ip-index">' + padNumber(i + 1, 4) + '</span> | ' + data.ips[i] + '</div>';
+                        html += '<div class="visitor-list">';
+                        for (var i = 0; i < visitors.length; i++) {
+                            var v = visitors[i];
+                            html += '<div class="visitor-entry">';
+                            html += '<div class="visitor-header">';
+                            html += '<span class="visitor-index">' + padNumber(i + 1, 4) + '</span>';
+                            html += ' | CRYSTAL ID: <span class="visitor-id">' + v.id + '</span>';
+                            html += '</div>';
+                            if (v.crystal) {
+                                html += '<div class="crystal-label">[ SNOWFLAKE CRYSTAL ]</div>';
+                                html += '<pre class="crystal">' + v.crystal + '</pre>';
+                            }
+                            html += '</div>';
                         }
                         html += '</div>';
                     }
