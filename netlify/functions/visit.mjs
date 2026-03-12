@@ -1,5 +1,7 @@
 import { getStore } from "@netlify/blobs";
 
+const MAX_STORED_IPS = 10000;
+
 export default async (req) => {
   const store = getStore("visitors");
   const data = (await store.get("data", { type: "json" })) || {
@@ -10,8 +12,10 @@ export default async (req) => {
   const ip = req.headers.get("x-nf-client-connection-ip");
 
   if (ip && !data.ips.includes(ip)) {
-    data.ips.push(ip);
     data.count++;
+    if (data.ips.length < MAX_STORED_IPS) {
+      data.ips.push(ip);
+    }
     await store.setJSON("data", data);
   }
 
