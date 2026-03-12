@@ -178,6 +178,51 @@
             font-size: 20px;
             margin: 16px 0;
         }
+
+        .auth-form {
+            margin: 24px 0;
+            text-align: center;
+        }
+
+        .auth-label {
+            font-size: 20px;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .auth-input {
+            background: #000000;
+            color: #33ff33;
+            border: 1px solid #33ff33;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            padding: 8px 12px;
+            width: 320px;
+            max-width: 100%;
+            letter-spacing: 1px;
+            outline: none;
+        }
+
+        .auth-input:focus {
+            box-shadow: 0 0 5px rgba(51, 255, 51, 0.5);
+        }
+
+        .auth-button {
+            background: #000000;
+            color: #33ff33;
+            border: 1px solid #33ff33;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            padding: 8px 20px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            margin-top: 12px;
+        }
+
+        .auth-button:hover {
+            background: #33ff33;
+            color: #000000;
+        }
     </style>
 </head>
 <body>
@@ -188,7 +233,13 @@
         <div class="border-line">+--------------------------------------------+</div>
 
         <div id="content">
-            <div class="loading">RETRIEVING RECORDS<span class="cursor">_</span></div>
+            <div class="auth-form" id="auth-form">
+                <div class="auth-label">ENTER ADMIN TOKEN TO ACCESS RECORDS:</div>
+                <br>
+                <input type="password" class="auth-input" id="token-input" placeholder="TOKEN" autofocus>
+                <br>
+                <button class="auth-button" id="auth-submit">&gt; AUTHENTICATE</button>
+            </div>
         </div>
 
         <div class="border-line">+--------------------------------------------+</div>
@@ -205,11 +256,20 @@
             return s;
         }
 
-        (function() {
-            fetch("/api/ips")
-                .then(function(res) { return res.json(); })
+        function fetchIPs(token) {
+            var container = document.getElementById("content");
+            container.innerHTML = '<div class="loading">RETRIEVING RECORDS<span class="cursor">_</span></div>';
+
+            fetch("/api/ips", {
+                headers: { "Authorization": "Bearer " + token }
+            })
+                .then(function(res) {
+                    if (res.status === 401) {
+                        throw new Error("UNAUTHORIZED");
+                    }
+                    return res.json();
+                })
                 .then(function(data) {
-                    var container = document.getElementById("content");
                     var html = '<div class="summary">TOTAL UNIQUE VISITORS: <span class="count">' + data.count + '</span></div>';
 
                     if (data.ips.length === 0) {
@@ -224,11 +284,26 @@
 
                     container.innerHTML = html;
                 })
-                .catch(function() {
-                    var container = document.getElementById("content");
-                    container.innerHTML = '<div class="error">ERROR: UNABLE TO RETRIEVE RECORDS</div>';
+                .catch(function(err) {
+                    if (err.message === "UNAUTHORIZED") {
+                        container.innerHTML = '<div class="error">ACCESS DENIED: INVALID TOKEN</div>';
+                    } else {
+                        container.innerHTML = '<div class="error">ERROR: UNABLE TO RETRIEVE RECORDS</div>';
+                    }
                 });
-        })();
+        }
+
+        document.getElementById("auth-submit").addEventListener("click", function() {
+            var token = document.getElementById("token-input").value.trim();
+            if (token) fetchIPs(token);
+        });
+
+        document.getElementById("token-input").addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                var token = this.value.trim();
+                if (token) fetchIPs(token);
+            }
+        });
 
         function updateClock() {
             var now = new Date();
