@@ -273,19 +273,37 @@
                     return res.json();
                 })
                 .then(function(data) {
-                    var html = '<div class="summary">TOTAL UNIQUE VISITORS: <span class="count">' + data.count + '</span></div>';
+                    container.innerHTML = '';
+
+                    var summary = document.createElement('div');
+                    summary.className = 'summary';
+                    summary.textContent = 'TOTAL UNIQUE VISITORS: ';
+                    var countSpan = document.createElement('span');
+                    countSpan.className = 'count';
+                    countSpan.textContent = data.count;
+                    summary.appendChild(countSpan);
+                    container.appendChild(summary);
 
                     if (data.ips.length === 0) {
-                        html += '<div class="loading">NO RECORDS FOUND</div>';
+                        var noRecords = document.createElement('div');
+                        noRecords.className = 'loading';
+                        noRecords.textContent = 'NO RECORDS FOUND';
+                        container.appendChild(noRecords);
                     } else {
-                        html += '<div class="ip-list">';
+                        var list = document.createElement('div');
+                        list.className = 'ip-list';
                         for (var i = 0; i < data.ips.length; i++) {
-                            html += '<div class="ip-entry"><span class="ip-index">' + padNumber(i + 1, 4) + '</span> | ' + data.ips[i] + '</div>';
+                            var entry = document.createElement('div');
+                            entry.className = 'ip-entry';
+                            var idx = document.createElement('span');
+                            idx.className = 'ip-index';
+                            idx.textContent = padNumber(i + 1, 4);
+                            entry.appendChild(idx);
+                            entry.appendChild(document.createTextNode(' | ' + data.ips[i]));
+                            list.appendChild(entry);
                         }
-                        html += '</div>';
+                        container.appendChild(list);
                     }
-
-                    container.innerHTML = html;
                 })
                 .catch(function(err) {
                     if (err.message === "RATE_LIMITED") {
