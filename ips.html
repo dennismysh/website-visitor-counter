@@ -264,6 +264,9 @@
                 headers: { "Authorization": "Bearer " + token }
             })
                 .then(function(res) {
+                    if (res.status === 429) {
+                        throw new Error("RATE_LIMITED");
+                    }
                     if (res.status === 401) {
                         throw new Error("UNAUTHORIZED");
                     }
@@ -285,7 +288,9 @@
                     container.innerHTML = html;
                 })
                 .catch(function(err) {
-                    if (err.message === "UNAUTHORIZED") {
+                    if (err.message === "RATE_LIMITED") {
+                        container.innerHTML = '<div class="error">LOCKOUT: TOO MANY FAILED ATTEMPTS. TRY AGAIN IN 15 MIN.</div>';
+                    } else if (err.message === "UNAUTHORIZED") {
                         container.innerHTML = '<div class="error">ACCESS DENIED: INVALID TOKEN</div>';
                     } else {
                         container.innerHTML = '<div class="error">ERROR: UNABLE TO RETRIEVE RECORDS</div>';
